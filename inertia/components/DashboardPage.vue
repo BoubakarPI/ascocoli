@@ -5,7 +5,7 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
           <div class="flex items-center">
-            <h1 class="text-xl font-bold text-gray-900">Audio Dashboard</h1>
+            <h1 class="text-xl font-bold text-gray-900">Ascocoli AI</h1>
           </div>
           <div class="flex items-center">
             <button
@@ -22,7 +22,7 @@
     <!-- Main content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-lg font-medium text-gray-900 mb-4">Uploader un fichier audio</h2>
+        <h2 class="text-lg font-medium text-gray-900 mb-4">Uploader un fichier pdf</h2>
 
         <!-- Upload area -->
         <div
@@ -37,7 +37,7 @@
           <input
             ref="fileInput"
             type="file"
-            accept="audio/*"
+            accept=".pdf"
             class="hidden"
             @change="handleFileSelect"
           />
@@ -58,9 +58,9 @@
               />
             </svg>
             <p class="mt-2 text-sm text-gray-600">
-              Glissez et déposez un fichier audio ici, ou cliquez pour sélectionner
+              Glissez et déposez un fichier pdf ici, ou cliquez pour sélectionner
             </p>
-            <p class="mt-1 text-xs text-gray-500">MP3, WAV, OGG, FLAC (max. 20MB)</p>
+            <p class="mt-1 text-xs text-gray-500">PDF (max. 50MB)</p>
           </div>
 
           <!-- Loading animation -->
@@ -113,7 +113,7 @@
               class="flex-grow px-3 py-2 border border-gray-300 rounded-l-md bg-gray-50 text-sm"
             />
             <button
-              @click="copyToClipboard"
+              @click="copyToClipboard('L\'url du PDF')"
               class="bg-gray-100 border border-l-0 border-gray-300 rounded-r-md px-4 hover:bg-gray-200 transition-colors"
             >
               <span v-if="copied">Copié!</span>
@@ -128,13 +128,17 @@
             @click="resetUpload"
             class="text-primary hover:text-primary-dark text-sm font-medium"
           >
-            Télécharger un autre fichier
+            Téléverser un autre pdf
           </button>
+        </div>
+
+        <div class="pt-2">
+          <QcmList :qcm-data="questions" @copy="(p) => copyToClipboard(p)"/>
         </div>
 
         <!-- Recent uploads -->
         <div v-if="recentUploads.length > 0" class="mt-8">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Tous les Fichiers </h3>
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Tous les PDF scannés </h3>
           <ul class="divide-y divide-gray-200">
             <li
               v-for="(file, index) in recentUploads"
@@ -176,6 +180,7 @@ import { ref, onMounted } from 'vue'
 import { router } from '@inertiajs/vue3'
 import ToastContainer from '~/components/ui/ToastContainer.vue'
 import { useToast } from "~/composables/use_toast"
+import QcmList from '~/components/QcmList.vue'
 
 // Déclaration des références avec types
 const fileInput = ref<HTMLInputElement | null>(null)
@@ -190,7 +195,34 @@ interface UploadItem {
   url: string
   date: string
 }
+const mockQuestions = [
+  {
+    id: 1,
+    question: "What is the capital of France?",
+    choices: {
+      A: "Berlin",
+      B: "Madrid",
+      C: "Paris",
+      D: "Rome"
+    },
+    correct_answers: ["C"],
+    explanation: "Paris is the capital of France."
+  },
+  {
+    id: 2,
+    question: "Who developed the theory of relativity?",
+    choices: {
+      A: "Isaac Newton",
+      B: "Albert Einstein",
+      C: "Nikola Tesla",
+      D: "Galileo Galilei"
+    },
+    correct_answers: ["B"],
+    explanation: "Einstein formulated the theory of relativity."
+  }
+]
 
+const questions = ref([])
 const recentUploads = ref<UploadItem[]>([])
 
 // Déclenchement du clic sur l'input de fichier
@@ -219,8 +251,8 @@ const handleFileSelect = (event: Event): void => {
 }
 
 const uploadFile = async (file: File): Promise<void> => {
-  if (file.size > 20 * 1024 * 1024) {
-    alert('Le fichier est trop volumineux. La taille maximale est de 20MB.')
+  if (file.size > 50 * 1024 * 1024) {
+    alert('Le fichier est trop volumineux. La taille maximale est de 50MB.')
     return
   }
 
@@ -234,7 +266,7 @@ const uploadFile = async (file: File): Promise<void> => {
   }, 300)
 
   const formData = new FormData()
-  formData.append('audio', file)
+  formData.append('pdf', file)
 
   try {
     const response = await fetch('/api/upload', {
@@ -247,14 +279,18 @@ const uploadFile = async (file: File): Promise<void> => {
     }
 
     const data = await response.json()
-    uploadedFileUrl.value = data.url
+    uploadedFileUrl.value = `https://ascocoli-cdn.uvatis.com/${file.name}`
     recentUploads.value.unshift({
       name: file.name,
       url: uploadedFileUrl.value,
       date: new Date().toISOString(),
     })
 
-    success('Audio uploadé avec succès', { title: 'Félicitations', duration: 3000 })
+    console.log(data)
+
+    questions.value = data
+
+    success('PDF scanné avec succès', { title: 'Félicitations', duration: 3000 })
   } catch (error) {
     console.error('Upload failed:', error)
   } finally {
@@ -263,8 +299,8 @@ const uploadFile = async (file: File): Promise<void> => {
 }
 
 // Copier l'URL dans le presse-papier
-const copyToClipboard = (): void => {
-  info('Lien copié avec succès', { title: 'Succès', duration: 3000 })
+const copyToClipboard = (lien: string): void => {
+  info(`${lien} copié avec succès`, { title: 'Succès', duration: 3000 })
   navigator.clipboard.writeText(uploadedFileUrl.value)
   copied.value = true
 

@@ -4,6 +4,6 @@
 </script>
 
 <template>
-  <Head>Cantique App</Head>
+  <Head>Ascocoli AI Agent</Head>
   <DashboardPage/>
 </template>
