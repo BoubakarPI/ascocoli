@@ -4,7 +4,7 @@ import { inject } from '@adonisjs/core'
 @inject()
 export class UploadFileUseCase {
   constructor(private uploadRepository: UploadRepository) {}
-  handle(file: any): Promise<string> {
+  handle(file: any) {
     return this.uploadRepository.uploadFile(file)
   }
 }
