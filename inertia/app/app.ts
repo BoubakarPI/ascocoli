@@ -18,14 +18,12 @@ createInertiaApp({
   resolve: (name) => {
     return resolvePageComponent(
       `../pages/${name}.vue`,
-      import.meta.glob<DefineComponent>('../pages/**/*.vue'),
+      import.meta.glob<DefineComponent>('../pages/**/*.vue')
     )
   },
 
   setup({ el, App, props, plugin }) {
-
     createSSRApp({ render: () => h(App, props) })
-
       .use(plugin)
       .mount(el)
   },

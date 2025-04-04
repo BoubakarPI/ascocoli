@@ -1,8 +1,8 @@
 import type { ApplicationService } from '@adonisjs/core/types'
 import { UserRepository } from '#domain/contracts/repositories/user_repository'
 import { LucidUserRepositoryImpl } from '#data/repositories/lucid/user_repository_impl'
-import { UploadFileToR2Impl } from '#data/repositories/cloudflare/upload_file_r2_impl'
 import { UploadRepository } from '#domain/contracts/repositories/upload_repository'
+import { UploadFileToMistralImpl } from '#data/repositories/mistral/upload_file_mistral_impl'
 
 export default class AppProvider {
   constructor(protected app: ApplicationService) {}
@@ -17,7 +17,7 @@ export default class AppProvider {
    */
   async boot() {
     this.app.container.bind(UserRepository, () => new LucidUserRepositoryImpl())
-    this.app.container.bind(UploadRepository, () => new UploadFileToR2Impl())
+    this.app.container.bind(UploadRepository, () => new UploadFileToMistralImpl())
   }
 
   /**
