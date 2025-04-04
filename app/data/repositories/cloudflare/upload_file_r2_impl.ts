@@ -3,9 +3,10 @@ import drive from '@adonisjs/drive/services/main'
 import { GetFileListItemDto } from '#data/types/fetch_item_interface'
 import env from '#start/env'
 import { extractUploadItems } from '#data/utils/extract_files'
+import { ContentChunk } from '@mistralai/mistralai/models/components/index.js'
 
 export class UploadFileToR2Impl implements UploadRepository {
-  async uploadFile(file: any): Promise<string> {
+  async uploadFile(file: any): Promise<string | Array<ContentChunk> | null | undefined> {
     const fileName = file.clientName
     try {
       await file.moveToDisk(fileName)
